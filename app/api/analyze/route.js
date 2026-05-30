@@ -5,6 +5,12 @@ export async function POST(request) {
     return Response.json({ error: 'insufficient_contract', message: 'Please provide a complete contract text.' }, { status: 400 })
   }
 
+  const apiKey = process.env.ANTHROPIC_API_KEY
+
+  if (!apiKey) {
+    return Response.json({ error: 'api_error', message: 'API key not configured. Please add ANTHROPIC_API_KEY in Vercel environment variables.' }, { status: 500 })
+  }
+
   const SYSTEM_PROMPT = `You are ContractFlag, a contract risk analyst for small and mid-size businesses. Your job is to read vendor, supplier, SaaS, service, or partnership contracts and identify the 8 highest-risk clauses — written in plain English that a non-lawyer founder or operator can immediately understand and act on.
 
 You are not a law firm and do not provide legal advice. You provide structured risk intelligence. Always include a disclaimer at the end.
@@ -75,7 +81,7 @@ Rules: Be direct. Never soften RED flags. Only quote verbatim text. Return valid
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
@@ -87,11 +93,16 @@ Rules: Be direct. Never soften RED flags. Only quote verbatim text. Return valid
     })
 
     const data = await response.json()
+
+    if (data.error) {
+      return Response.json({ error: 'api_error', message: `Anthropic error: ${data.error.message}` }, { status: 500 })
+    }
+
     const raw = data.content?.map(b => b.text || '').join('') || ''
     const clean = raw.replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(clean)
     return Response.json(parsed)
   } catch (e) {
-    return Response.json({ error: 'api_error', message: 'Analysis failed. Please try again.' }, { status: 500 })
+    return Response.json({ error: 'api_error', message: `Error: ${e.message}` }, { status: 500 })
   }
 }
