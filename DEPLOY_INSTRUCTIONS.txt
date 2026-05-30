@@ -1,0 +1,91 @@
+# How to Deploy ContractFlag — Step by Step
+
+You need about 20 minutes. No coding required.
+
+---
+
+## PART 1 — Upload the code to GitHub (10 min)
+
+1. Go to github.com and sign in
+
+2. Click the big green "New" button (top left)
+
+3. Fill in:
+   - Repository name: contractflag
+   - Keep everything else as default
+   - Click "Create repository"
+
+4. On the next page, look for the link that says "uploading an existing file"
+   - Click it
+
+5. You'll see a drag-and-drop area that says "Drag files here"
+   - Open the ZIP file you downloaded from Claude
+   - You'll see a folder called "contractflag" with files inside it
+   - Drag ALL the files and folders into that GitHub upload area
+
+6. Scroll down, click "Commit changes"
+
+---
+
+## PART 2 — Deploy to Vercel (5 min)
+
+1. Go to vercel.com and sign in with your GitHub account
+
+2. Click "Add New Project"
+
+3. You'll see your "contractflag" repo listed — click "Import"
+
+4. Click "Deploy" (don't change anything)
+
+5. Wait 1-2 minutes — Vercel builds the app
+
+---
+
+## PART 3 — Add your Anthropic API key (5 min)
+
+This is the secret key that powers the AI analysis.
+Without this, the app won't work.
+
+1. Go to console.anthropic.com
+   - Sign up if you don't have an account
+   - Go to "API Keys" → click "Create Key"
+   - Copy the key (it starts with "sk-ant-...")
+   - IMPORTANT: save it somewhere safe, you can only see it once
+
+2. Go back to vercel.com
+   - Click on your "contractflag" project
+   - Click "Settings" (top menu)
+   - Click "Environment Variables" (left sidebar)
+   - Click "Add New"
+   - Name:  ANTHROPIC_API_KEY
+   - Value: paste your key here (sk-ant-...)
+   - Click "Save"
+
+3. Now redeploy so it picks up the key:
+   - Click "Deployments" (top menu)
+   - Click the three dots "..." next to the top deployment
+   - Click "Redeploy"
+   - Wait 1 minute
+
+---
+
+## PART 4 — Get your live link
+
+1. Click "Domains" in your Vercel project
+2. You'll see something like: contractflag.vercel.app
+3. That's your live app — share that link with anyone!
+
+---
+
+## You're done.
+
+Anyone who visits your link can:
+- Paste or upload a contract
+- Get a full risk report in 60 seconds
+- Without you seeing their contract at all
+
+---
+
+## If something goes wrong
+
+Reply to Claude with exactly what happened and at which step.
