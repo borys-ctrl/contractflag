@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 const SAMPLE_CONTRACT = `SOFTWARE AS A SERVICE AGREEMENT
 
@@ -104,14 +104,56 @@ export default function ContractFlag() {
   const [errorMsg, setErrorMsg] = useState('')
   const [progress, setProgress] = useState(0)
   const [tab, setTab] = useState('flags')
+  const [pdfLoading, setPdfLoading] = useState(false)
   const fileRef = useRef()
 
-  const handleFile = useCallback((file) => {
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+    }
+    document.head.appendChild(script)
+  }, [])
+
+  const extractPdfText = async (file) => {
+    setPdfLoading(true)
+    try {
+      const arrayBuffer = await file.arrayBuffer()
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      let fullText = ''
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const pageText = content.items.map(item => item.str).join(' ')
+        fullText += pageText + '\n'
+      }
+      setPdfLoading(false)
+      return fullText
+    } catch (e) {
+      setPdfLoading(false)
+      throw new Error('Could not read PDF. Try copying and pasting the text instead.')
+    }
+  }
+
+  const handleFile = useCallback(async (file) => {
     if (!file) return
     setFileName(file.name)
-    const reader = new FileReader()
-    reader.onload = e => setContractText(e.target.result)
-    reader.readAsText(file)
+
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      try {
+        const text = await extractPdfText(file)
+        setContractText(text)
+      } catch (e) {
+        setErrorMsg(e.message)
+        setStage('error')
+      }
+    } else {
+      const reader = new FileReader()
+      reader.onload = e => setContractText(e.target.result)
+      reader.readAsText(file)
+    }
   }, [])
 
   const analyze = async () => {
@@ -158,10 +200,16 @@ export default function ContractFlag() {
         onDrop={e=>{e.preventDefault();setDragging(false);handleFile(e.dataTransfer.files[0])}}
         onClick={()=>fileRef.current.click()}
         style={{border:`2px dashed ${dragging?'#6366F1':'#D1D5DB'}`,borderRadius:14,padding:'32px 24px',textAlign:'center',cursor:'pointer',marginBottom:20,background:dragging?'#EEF2FF':'#F9FAFB',transition:'all 0.2s'}}>
-        <div style={{fontSize:36,marginBottom:10}}>📄</div>
-        <div style={{fontWeight:600,fontSize:15,color:'#111827',marginBottom:4}}>{fileName||'Drop a contract file here'}</div>
-        <div style={{fontSize:12,color:'#9CA3AF'}}>{fileName?'File loaded — ready to analyze':'or click to browse (.txt file)'}</div>
-        <input ref={fileRef} type="file" accept=".txt" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
+        <div style={{fontSize:36,marginBottom:10}}>{pdfLoading ? '⏳' : '📄'}</div>
+        <div style={{fontWeight:600,fontSize:15,color:'#111827',marginBottom:4}}>
+          {pdfLoading ? 'Reading PDF…' : fileName || 'Drop a contract file here'}
+        </div>
+        <div style={{fontSize:12,color:'#9CA3AF'}}>
+          {pdfLoading ? 'Extracting text from your PDF, one moment…'
+            : fileName ? 'File loaded — ready to analyze'
+            : 'PDF or TXT — click to browse or drag and drop'}
+        </div>
+        <input ref={fileRef} type="file" accept=".txt,.pdf" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
       </div>
       <div style={{textAlign:'center',color:'#9CA3AF',fontSize:12,margin:'0 0 12px'}}>— or paste contract text —</div>
       <textarea rows={8} placeholder="Paste the full contract text here..." value={contractText}
@@ -170,10 +218,10 @@ export default function ContractFlag() {
       <div style={{display:'flex',gap:10,marginTop:14}}>
         <button onClick={()=>{setContractText(SAMPLE_CONTRACT);setFileName('sample_saas_agreement.txt')}}
           style={{flex:1,padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer'}}>
-          Try sample contract
+          Try sample
         </button>
-        <button onClick={analyze} disabled={!contractText.trim()}
-          style={{flex:2,padding:'11px 0',border:'none',borderRadius:8,background:contractText.trim()?'#111827':'#E5E7EB',color:contractText.trim()?'#fff':'#9CA3AF',fontSize:14,fontWeight:600,cursor:contractText.trim()?'pointer':'default',transition:'background 0.2s'}}>
+        <button onClick={analyze} disabled={!contractText.trim() || pdfLoading}
+          style={{flex:2,padding:'11px 0',border:'none',borderRadius:8,background:contractText.trim()&&!pdfLoading?'#111827':'#E5E7EB',color:contractText.trim()&&!pdfLoading?'#fff':'#9CA3AF',fontSize:14,fontWeight:600,cursor:contractText.trim()&&!pdfLoading?'pointer':'default',transition:'background 0.2s'}}>
           Analyze Contract →
         </button>
       </div>
