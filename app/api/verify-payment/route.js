@@ -1,16 +1,30 @@
 export async function POST(request) {
-  const { contractText } = await request.json()
+  const { sessionId, contractText } = await request.json()
 
-  if (!contractText || contractText.trim().length < 100) {
-    return Response.json({ error: 'insufficient_contract', message: 'Please provide a complete contract text.' }, { status: 400 })
+  if (!sessionId || !contractText) {
+    return Response.json({ error: 'Missing session or contract.' }, { status: 400 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-
-  if (!apiKey) {
-    return Response.json({ error: 'api_error', message: 'API key not configured. Please add ANTHROPIC_API_KEY in Vercel environment variables.' }, { status: 500 })
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey) {
+    return Response.json({ error: 'Stripe not configured.' }, { status: 500 })
   }
 
+  // Verify payment with Stripe
+  try {
+    const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
+      headers: { 'Authorization': `Bearer ${secretKey}` },
+    })
+    const session = await stripeRes.json()
+
+    if (session.payment_status !== 'paid') {
+      return Response.json({ error: 'Payment not completed.' }, { status: 402 })
+    }
+  } catch (e) {
+    return Response.json({ error: 'Could not verify payment.' }, { status: 500 })
+  }
+
+  // Payment verified — run the analysis
   const SYSTEM_PROMPT = `You are ContractFlag, a contract risk analyst for small and mid-size businesses. Your job is to read vendor, supplier, SaaS, service, or partnership contracts and identify the 8 highest-risk clauses — written in plain English that a non-lawyer founder or operator can immediately understand and act on.
 
 You are not a law firm and do not provide legal advice. You provide structured risk intelligence. Always include a disclaimer at the end.
@@ -81,12 +95,12 @@ Rules: Be direct. Never soften RED flags. Only quote verbatim text. Return valid
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
+        max_tokens: 4000,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: contractText }],
       }),
@@ -95,7 +109,7 @@ Rules: Be direct. Never soften RED flags. Only quote verbatim text. Return valid
     const data = await response.json()
 
     if (data.error) {
-      return Response.json({ error: 'api_error', message: `Anthropic error: ${data.error.message}` }, { status: 500 })
+      return Response.json({ error: `Analysis error: ${data.error.message}` }, { status: 500 })
     }
 
     const raw = data.content?.map(b => b.text || '').join('') || ''
@@ -103,6 +117,6 @@ Rules: Be direct. Never soften RED flags. Only quote verbatim text. Return valid
     const parsed = JSON.parse(clean)
     return Response.json(parsed)
   } catch (e) {
-    return Response.json({ error: 'api_error', message: `Error: ${e.message}` }, { status: 500 })
+    return Response.json({ error: `Error: ${e.message}` }, { status: 500 })
   }
 }
