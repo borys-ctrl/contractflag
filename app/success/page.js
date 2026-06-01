@@ -172,7 +172,7 @@ function SuccessContent() {
         <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#111827',marginBottom:8}}>Something went wrong</div>
         <div style={{fontSize:13,color:'#6B7280',maxWidth:360,margin:'0 auto 12px'}}>{errorMsg}</div>
         <div style={{fontSize:12,color:'#9CA3AF',marginBottom:28}}>Your payment was captured. Email <strong>support@contractflag.app</strong> and we will fix it immediately.</div>
-        <a href="/" style={{padding:'11px 28px',background:'#111827',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer',textDecoration:'none'}}>Try again</a>
+        <a href="/landing" style={{padding:'11px 28px',background:'#111827',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer',textDecoration:'none'}}>Try again</a>
       </div>
     </div>
   )
@@ -243,7 +243,7 @@ function SuccessContent() {
       <div style={{marginTop:16,padding:'12px 14px',borderRadius:8,background:'#F9FAFB',border:'1px solid #E5E7EB'}}>
         <div style={{fontSize:11,color:'#9CA3AF',lineHeight:1.6}}>⚖ {disclaimer}</div>
       </div>
-      <a href="/" style={{display:'block',width:'100%',marginTop:14,padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer',textAlign:'center',textDecoration:'none',boxSizing:'border-box'}}>
+      <a href="/landing" style={{display:'block',width:'100%',marginTop:14,padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer',textAlign:'center',textDecoration:'none',boxSizing:'border-box'}}>
         ← Analyze another contract
       </a>
     </div>
