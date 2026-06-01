@@ -192,7 +192,7 @@ export default function ContractFlag() {
       const parsed = await res.json()
       clearInterval(tick)
       setProgress(100)
-      if (parsed.error) { setErrorMsg(parsed.error); setStage('upload'); return }
+      if (parsed.error) { const msg = typeof parsed.message === 'string' ? parsed.message : typeof parsed.error === 'string' ? parsed.error : 'Analysis failed. Please try again.'; setErrorMsg(msg); setStage('upload'); return }
       setTimeout(() => { setResult(parsed); setStage('preview') }, 300)
     } catch (e) {
       clearInterval(tick)
