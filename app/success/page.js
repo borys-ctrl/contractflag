@@ -3,6 +3,16 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
+const reportError = (error, context) => {
+  try {
+    fetch('/api/report-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: String(error), context, userAgent: navigator?.userAgent || 'unknown' }),
+    }).catch(() => {})
+  } catch (e) {}
+}
+
 const SEV = {
   RED:    { bg: '#FEE2E2', text: '#991B1B', border: '#FECACA', dot: '#EF4444', label: 'High Risk' },
   YELLOW: { bg: '#FEF3C7', text: '#92400E', border: '#FDE68A', dot: '#F59E0B', label: 'Medium Risk' },
@@ -130,12 +140,13 @@ function SuccessContent() {
       const parsed = await res.json()
       if (parsed.error) {
         const msg = typeof parsed.message === 'string' ? parsed.message : 'Verification failed.'
-        setErrorMsg(msg); setStage('error'); return
+        reportError(msg, 'success-verify'); setErrorMsg(msg); setStage('error'); return
       }
       sessionStorage.removeItem('cf_contract')
       setResult(parsed)
       setStage('result')
     } catch (e) {
+      reportError(e.message || 'unknown', 'success-catch')
       setErrorMsg('Something went wrong. Please contact support@contractflag.app')
       setStage('error')
     }
