@@ -38,6 +38,8 @@ const SEV = {
   GREEN:  { bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0', dot: '#10B981', label: 'Low Risk' },
 }
 
+const normalize = s => { if (!s) return "YELLOW"; const u = s.toUpperCase(); if (u === "RED" || u === "HIGH") return "RED"; if (u === "GREEN" || u === "LOW") return "GREEN"; return "YELLOW"; }
+
 const RISK = {
   HIGH:   { bg: '#FEE2E2', text: '#991B1B' },
   MEDIUM: { bg: '#FEF3C7', text: '#92400E' },
@@ -62,7 +64,7 @@ function Gauge({ score }) {
 
 function FlagCard({ flag, idx }) {
   const [open, setOpen] = useState(false)
-  const c = SEV[flag.severity] || SEV.YELLOW
+  const c = SEV[normalize(flag.severity)] || SEV.YELLOW
   return (
     <div style={{border:`1px solid ${open?c.border:'#E5E7EB'}`,borderRadius:12,marginBottom:10,background:open?c.bg:'#FAFAFA',transition:'all 0.2s',overflow:'hidden'}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:'100%',display:'flex',alignItems:'center',gap:12,padding:'14px 16px',background:'transparent',border:'none',cursor:'pointer',textAlign:'left'}}>
@@ -304,11 +306,11 @@ export default function ContractFlag() {
   if (stage === 'preview' && result) {
     const { summary, flags=[], clean_clauses=[], disclaimer } = result
     const rc = RISK[summary?.overall_risk] || RISK.MEDIUM
-    const redFlags = flags.filter(f => f.severity === 'RED')
-    const freeFlags = flags.filter(f => f.severity !== 'RED')
-    const reds = flags.filter(f=>f.severity==='RED')
-    const yellows = flags.filter(f=>f.severity==='YELLOW')
-    const greens = flags.filter(f=>f.severity==='GREEN')
+    const redFlags = flags.filter(f => normalize(f.severity) === "RED")
+    const freeFlags = flags.filter(f => normalize(f.severity) !== "RED")
+    const reds = flags.filter(f=>normalize(f.severity)==="RED")
+    const yellows = flags.filter(f=>normalize(f.severity)==="YELLOW")
+    const greens = flags.filter(f=>normalize(f.severity)==="GREEN")
 
     return (
       <div style={base}>
