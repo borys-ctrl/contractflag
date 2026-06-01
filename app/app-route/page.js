@@ -1,6 +1,16 @@
 'use client'
 import { useState, useRef, useCallback, useEffect } from 'react'
 
+const reportError = (error, context) => {
+  try {
+    fetch('/api/report-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: String(error), context, userAgent: navigator.userAgent }),
+    }).catch(() => {})
+  } catch (e) {}
+}
+
 const SAMPLE_CONTRACT = `SOFTWARE AS A SERVICE AGREEMENT
 
 This Software as a Service Agreement ("Agreement") is entered into as of the date of acceptance between Acme Software Inc. ("Provider") and the subscribing entity ("Customer").
@@ -194,10 +204,11 @@ export default function ContractFlag() {
       const parsed = await res.json()
       clearInterval(tick)
       setProgress(100)
-      if (parsed.error) { const msg = typeof parsed.message === 'string' ? parsed.message : typeof parsed.error === 'string' ? parsed.error : 'Analysis failed. Please try again.'; setErrorMsg(msg); setStage('upload'); return }
+      if (parsed.error) { const msg = typeof parsed.message === 'string' ? parsed.message : typeof parsed.error === 'string' ? parsed.error : 'Analysis failed. Please try again.'; reportError(msg, 'analyze-api-error'); setErrorMsg(msg); setStage('upload'); return }
       setTimeout(() => { setResult(parsed); setStage('preview') }, 300)
     } catch (e) {
       clearInterval(tick)
+      reportError(e.message || 'unknown', 'analyze-catch')
       setErrorMsg('Analysis failed. Please try again.')
       setStage('upload')
     }
@@ -218,6 +229,7 @@ export default function ContractFlag() {
       if (data.error) { setErrorMsg(data.error); setPaying(false); return }
       window.location.href = data.url
     } catch (e) {
+      reportError(e.message || 'unknown', 'checkout')
       setErrorMsg('Could not start checkout. Please try again.')
       setPaying(false)
     }
