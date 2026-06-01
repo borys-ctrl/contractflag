@@ -206,6 +206,7 @@ export default function ContractFlag() {
     setPaying(true)
     try {
       sessionStorage.setItem('cf_contract', contractText)
+      if (result) sessionStorage.setItem('cf_result', JSON.stringify(result))
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -320,7 +321,7 @@ export default function ContractFlag() {
             <div style={{flex:1,minWidth:200}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
                 <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',padding:'3px 10px',borderRadius:99,background:rc.bg,color:rc.text}}>{summary?.overall_risk} RISK</span>
-                <span style={{fontSize:12,color:'#6B7280'}}>{summary?.flags_found} issues found</span>
+                <span style={{fontSize:12,color:'#6B7280'}}>{flags.length} issues found</span>
               </div>
               <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'#F9FAFB',lineHeight:1.5,marginBottom:12}}>{summary?.one_line}</div>
               <div style={{display:'flex',gap:12}}>
