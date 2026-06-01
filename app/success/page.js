@@ -66,39 +66,75 @@ function FlagCard({ flag, idx }) {
   )
 }
 
+function EmailCapture() {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  return sent ? (
+    <div style={{fontSize:13,color:'#065F46',fontWeight:500}}>✓ Got it — we'll be in touch!</div>
+  ) : (
+    <div style={{display:'flex',gap:8}}>
+      <input type="email" placeholder="you@company.com" value={email} onChange={e=>setEmail(e.target.value)}
+        style={{flex:1,padding:'8px 12px',border:'1px solid #D1D5DB',borderRadius:6,fontSize:13,outline:'none'}}/>
+      <button onClick={()=>{if(email.includes('@'))setSent(true)}}
+        style={{padding:'8px 16px',background:'#111827',color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+        Send
+      </button>
+    </div>
+  )
+}
+
 function SuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
-  const [stage, setStage] = useState('analyzing')
+  const [stage, setStage] = useState('verifying')
   const [result, setResult] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
-  const [progress, setProgress] = useState(0)
   const [tab, setTab] = useState('flags')
 
   useEffect(() => {
     if (!sessionId) { setErrorMsg('No payment session found.'); setStage('error'); return }
-    const contractText = sessionStorage.getItem('cf_contract')
-    if (!contractText) { setErrorMsg('Contract data not found. Please go back and try again.'); setStage('error'); return }
-    runAnalysis(sessionId, contractText)
+    verifyAndLoad(sessionId)
   }, [sessionId])
 
-  const runAnalysis = async (sessionId, contractText) => {
-    const tick = setInterval(() => setProgress(p => p < 85 ? p + Math.random() * 5 : p), 400)
+  const verifyAndLoad = async (sessionId) => {
     try {
+      // Check if we already have the result cached from the preview
+      const cachedResult = sessionStorage.getItem('cf_result')
+      if (cachedResult) {
+        const parsed = JSON.parse(cachedResult)
+        // Verify payment silently in background, show result immediately
+        setResult(parsed)
+        setStage('result')
+        sessionStorage.removeItem('cf_result')
+        sessionStorage.removeItem('cf_contract')
+        // Still verify payment in background
+        fetch('/api/verify-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        }).catch(() => {}) // silent - result already shown
+        return
+      }
+
+      // No cache - fall back to full re-analysis
+      const contractText = sessionStorage.getItem('cf_contract')
+      if (!contractText) { setErrorMsg('Session expired. Please go back and try again.'); setStage('error'); return }
+
       const res = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, contractText }),
       })
       const parsed = await res.json()
-      clearInterval(tick)
-      setProgress(100)
-      if (parsed.error) { setErrorMsg(parsed.error); setStage('error'); return }
+      if (parsed.error) {
+        const msg = typeof parsed.message === 'string' ? parsed.message : 'Verification failed.'
+        setErrorMsg(msg); setStage('error'); return
+      }
       sessionStorage.removeItem('cf_contract')
-      setTimeout(() => { setResult(parsed); setStage('result') }, 300)
+      setResult(parsed)
+      setStage('result')
     } catch (e) {
-      clearInterval(tick)
-      setErrorMsg('Analysis failed. Please contact support.')
+      setErrorMsg('Something went wrong. Please contact support@contractflag.app')
       setStage('error')
     }
   }
@@ -115,17 +151,13 @@ function SuccessContent() {
     </div>
   )
 
-  if (stage === 'analyzing') return (
+  if (stage === 'verifying') return (
     <div style={{...base,textAlign:'center'}}>
       <Header/>
       <div style={{padding:'40px 0'}}>
         <div style={{fontSize:42,marginBottom:20}}>⚑</div>
-        <div style={{fontFamily:'Georgia,serif',fontSize:22,color:'#111827',marginBottom:6}}>Payment confirmed — analyzing your contract</div>
-        <div style={{fontSize:13,color:'#9CA3AF',marginBottom:32}}>Scanning all 8 risk categories…</div>
-        <div style={{background:'#F3F4F6',borderRadius:99,height:6,overflow:'hidden',maxWidth:320,margin:'0 auto'}}>
-          <div style={{height:'100%',background:'#111827',borderRadius:99,width:`${progress}%`,transition:'width 0.4s ease'}}/>
-        </div>
-        <div style={{fontSize:12,color:'#9CA3AF',marginTop:10}}>{Math.round(progress)}%</div>
+        <div style={{fontFamily:'Georgia,serif',fontSize:22,color:'#111827',marginBottom:6}}>Confirming payment…</div>
+        <div style={{fontSize:13,color:'#9CA3AF'}}>Just a moment</div>
       </div>
     </div>
   )
@@ -137,14 +169,16 @@ function SuccessContent() {
         <div style={{fontSize:42,marginBottom:16}}>⚠</div>
         <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#111827',marginBottom:8}}>Something went wrong</div>
         <div style={{fontSize:13,color:'#6B7280',maxWidth:360,margin:'0 auto 12px'}}>{errorMsg}</div>
-        <div style={{fontSize:12,color:'#9CA3AF',marginBottom:28}}>Your payment was captured. Email <strong>support@contractflag.com</strong> and we will refund you or fix it immediately.</div>
+        <div style={{fontSize:12,color:'#9CA3AF',marginBottom:28}}>Your payment was captured. Email <strong>support@contractflag.app</strong> and we will fix it immediately.</div>
         <a href="/" style={{padding:'11px 28px',background:'#111827',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer',textDecoration:'none'}}>Try again</a>
       </div>
     </div>
   )
 
-  const { summary, flags=[], clean_clauses=[], disclaimer } = result||{}
-  const rc = RISK[summary?.overall_risk]||RISK.MEDIUM
+  if (stage !== 'result' || !result) return null
+
+  const { summary, flags=[], clean_clauses=[], disclaimer } = result
+  const rc = RISK[summary?.overall_risk] || RISK.MEDIUM
   const reds = flags.filter(f=>f.severity==='RED')
   const yellows = flags.filter(f=>f.severity==='YELLOW')
   const greens = flags.filter(f=>f.severity==='GREEN')
@@ -158,7 +192,7 @@ function SuccessContent() {
           <div style={{flex:1,minWidth:200}}>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
               <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',padding:'3px 10px',borderRadius:99,background:rc.bg,color:rc.text}}>{summary?.overall_risk} RISK</span>
-              <span style={{fontSize:12,color:'#6B7280'}}>{summary?.flags_found} issue{summary?.flags_found!==1?'s':''} found</span>
+              <span style={{fontSize:12,color:'#6B7280'}}>{flags.length} issue{flags.length!==1?'s':''} found</span>
             </div>
             <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'#F9FAFB',lineHeight:1.5,marginBottom:12}}>{summary?.one_line}</div>
             <div style={{display:'flex',gap:12}}>
@@ -199,8 +233,8 @@ function SuccessContent() {
       )}
 
       <div style={{marginTop:24,padding:'16px',borderRadius:10,background:'#F0FDF4',border:'1px solid #BBF7D0'}}>
-        <div style={{fontSize:13,fontWeight:600,color:'#065F46',marginBottom:4}}>📩 Want this report sent to your email?</div>
-        <div style={{fontSize:12,color:'#6B7280',marginBottom:10}}>Enter your email and we'll send you a copy to share with your team or lawyer.</div>
+        <div style={{fontSize:13,fontWeight:600,color:'#065F46',marginBottom:4}}>📩 Want a copy sent to your email?</div>
+        <div style={{fontSize:12,color:'#6B7280',marginBottom:10}}>We'll send you this report to share with your team or lawyer.</div>
         <EmailCapture />
       </div>
 
@@ -210,23 +244,6 @@ function SuccessContent() {
       <a href="/" style={{display:'block',width:'100%',marginTop:14,padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer',textAlign:'center',textDecoration:'none',boxSizing:'border-box'}}>
         ← Analyze another contract
       </a>
-    </div>
-  )
-}
-
-function EmailCapture() {
-  const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
-  return sent ? (
-    <div style={{fontSize:13,color:'#065F46',fontWeight:500}}>✓ Got it — we'll be in touch!</div>
-  ) : (
-    <div style={{display:'flex',gap:8}}>
-      <input type="email" placeholder="you@company.com" value={email} onChange={e=>setEmail(e.target.value)}
-        style={{flex:1,padding:'8px 12px',border:'1px solid #D1D5DB',borderRadius:6,fontSize:13,outline:'none'}}/>
-      <button onClick={()=>{if(email.includes('@'))setSent(true)}}
-        style={{padding:'8px 16px',background:'#111827',color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-        Send
-      </button>
     </div>
   )
 }
