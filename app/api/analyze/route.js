@@ -86,7 +86,7 @@ Rules: Be direct. Never soften RED flags. Only quote verbatim text. Return valid
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
+        max_tokens: 4000,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: contractText }],
       }),
