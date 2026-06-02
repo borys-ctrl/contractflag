@@ -1,6 +1,14 @@
 'use client'
 import { useState, useRef, useCallback, useEffect } from 'react'
 
+const track = (event, params) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', event, params || {})
+    }
+  } catch (e) {}
+}
+
 const reportError = (error, context) => {
   try {
     fetch('/api/report-error', {
@@ -258,6 +266,7 @@ export default function ContractFlag() {
 
   const analyze = async () => {
     if (!contractText.trim()) return
+    track(isSample ? 'sample_analyze' : 'analyze_start')
     setStage('analyzing')
     setProgress(0)
     // Sample contract uses a cached result - no API call, no cost
@@ -277,6 +286,7 @@ export default function ContractFlag() {
       clearInterval(tick)
       setProgress(100)
       if (parsed.error) { const msg = typeof parsed.message === 'string' ? parsed.message : typeof parsed.error === 'string' ? parsed.error : 'Analysis failed. Please try again.'; reportError(msg, 'analyze-api-error'); setErrorMsg(msg); setStage('upload'); return }
+      track('paywall_view', { risk_score: parsed?.summary?.risk_score })
       setTimeout(() => { setResult(parsed); setStage('preview') }, 300)
     } catch (e) {
       clearInterval(tick)
@@ -288,6 +298,7 @@ export default function ContractFlag() {
 
   const handlePay = async () => {
     if (paying) return
+    track('checkout_click', { unlocked_one: emailUnlocked })
     setPaying(true)
     try {
       sessionStorage.setItem('cf_contract', contractText)
@@ -440,7 +451,7 @@ export default function ContractFlag() {
             </div>
             {/* Email unlock box - shown only before unlock */}
             {!emailUnlocked && (
-              <EmailUnlockBox result={result} onUnlock={() => setEmailUnlocked(true)} />
+              <EmailUnlockBox result={result} onUnlock={() => { track('email_unlock'); setEmailUnlocked(true) }} />
             )}
             {/* First red flag: revealed if unlocked, else locked */}
             {emailUnlocked
