@@ -42,6 +42,22 @@ During the term and for two (2) years thereafter, Customer shall not solicit, re
 9. DISPUTE RESOLUTION
 Any dispute shall be resolved by binding arbitration in San Francisco, California. THE PARTIES WAIVE ALL RIGHTS TO A JURY TRIAL. The prevailing party shall recover its reasonable attorney fees from the non-prevailing party.`
 
+const SAMPLE_RESULT = {
+  summary: { overall_risk: "HIGH", risk_score: 92, one_line: "Multiple severe one-sided provisions: auto-renewal with 20% fee hikes, vendor owns your data perpetually, asymmetric termination, and binding arbitration with fee shifting.", flags_found: 8 },
+  flags: [
+    { rank: 1, category: "IP OWNERSHIP & DATA RIGHTS", severity: "RED", clause_excerpt: "Provider is hereby granted a perpetual, irrevocable, royalty-free, worldwide license to use, reproduce, modify, and distribute Customer Data and any outputs generated through use of the Platform", plain_english: "The vendor gets to keep and use everything you upload — forever — even after you cancel. This includes any data, files, or outputs you create on their platform.", why_it_matters: "Your proprietary business data could be used by the vendor (or sold) with no time limit and no way to revoke it.", counter_move: "Demand this be changed to a limited license that ends when the contract ends, and applies only to anonymized data." },
+    { rank: 2, category: "LIABILITY CAPS & INDEMNIFICATION", severity: "RED", clause_excerpt: "IN NO EVENT SHALL PROVIDER'S TOTAL LIABILITY EXCEED THE FEES PAID BY CUSTOMER IN THE ONE (1) MONTH IMMEDIATELY PRECEDING THE CLAIM", plain_english: "If the vendor causes you serious damage, the most they will ever owe you is one month of fees. You also have to defend them if a third party sues over your use of the platform.", why_it_matters: "A data breach costing you $100,000 would entitle you to recover only one month of fees.", counter_move: "Push for a liability cap of at least 12 months of fees, and make indemnification mutual." },
+    { rank: 3, category: "AUTO-RENEWAL TRAPS", severity: "RED", clause_excerpt: "This Agreement shall automatically renew for successive one-year terms unless either party provides written notice of non-renewal at least ninety (90) days prior to the end of the then-current term", plain_english: "The contract renews itself for another full year unless you cancel 90 days before it ends. Miss that window and you are locked in for another 12 months.", why_it_matters: "You could be trapped paying for a service you no longer want for up to a year.", counter_move: "Negotiate the cancellation notice down to 30 days and ask for an email reminder before renewal." },
+    { rank: 4, category: "TERMINATION ASYMMETRY", severity: "RED", clause_excerpt: "Provider may terminate this Agreement immediately upon written notice if Customer breaches any provision. Customer may terminate this Agreement with ninety (90) days written notice.", plain_english: "The vendor can cut you off instantly. You have to give 90 days notice. And when it ends, your data is deleted in 7 days with no way to get it back.", why_it_matters: "You could lose access and all your data with almost no warning, while being locked into a long exit process yourself.", counter_move: "Make termination rights symmetric and require a 30-day data export window after termination." },
+    { rank: 5, category: "PAYMENT TERMS & LATE FEES", severity: "RED", clause_excerpt: "Late payments shall accrue interest at the rate of two percent (2%) per month. Provider may suspend Customer's access to the Platform immediately upon non-payment without liability to Customer.", plain_english: "Pay late and you are charged 2% per month (24% per year). The vendor can also shut off your access immediately with no grace period.", why_it_matters: "A single missed invoice could cut off your business operations and pile on heavy interest.", counter_move: "Ask for a 10-day cure period before suspension and cap late fees at 1% per month." },
+    { rank: 6, category: "UNILATERAL CHANGE RIGHTS", severity: "RED", clause_excerpt: "Provider reserves the right to modify this Agreement at any time by posting updated terms on Provider's website. Continued use of the Platform after such posting constitutes acceptance", plain_english: "The vendor can change the contract whenever they want just by updating their website. You automatically agree just by continuing to use the service.", why_it_matters: "Terms you agreed to could change overnight — including price — without you ever being notified directly.", counter_move: "Require 30 days direct written notice for any material change, with the right to terminate if you disagree." },
+    { rank: 7, category: "NON-SOLICITATION & NON-COMPETE", severity: "YELLOW", clause_excerpt: "During the term and for two (2) years thereafter, Customer shall not solicit, recruit, or hire any employee or contractor of Provider", plain_english: "For two years after the contract ends, you cannot hire anyone who worked for the vendor on your account.", why_it_matters: "If a great contractor worked on your project, you are barred from hiring them for two years.", counter_move: "Shorten to 12 months and limit it to employees directly involved in your account." },
+    { rank: 8, category: "DISPUTE RESOLUTION & GOVERNING LAW", severity: "YELLOW", clause_excerpt: "Any dispute shall be resolved by binding arbitration in San Francisco, California. THE PARTIES WAIVE ALL RIGHTS TO A JURY TRIAL. The prevailing party shall recover its reasonable attorney fees", plain_english: "You cannot sue in court or have a jury. All disputes go to arbitration in San Francisco, and if you lose you pay the vendor's legal fees too.", why_it_matters: "Challenging the vendor means traveling to California and risking paying their lawyers on top of your own.", counter_move: "Ask for arbitration in your home state and remove the one-sided fee-shifting clause." }
+  ],
+  clean_clauses: [],
+  disclaimer: "ContractFlag provides risk intelligence, not legal advice. Have a qualified attorney review any contract before signing."
+}
+
 const SEV = {
   RED:    { bg: '#FEE2E2', text: '#991B1B', border: '#FECACA', dot: '#EF4444', label: 'High Risk' },
   YELLOW: { bg: '#FEF3C7', text: '#92400E', border: '#FDE68A', dot: '#F59E0B', label: 'Medium Risk' },
@@ -145,6 +161,7 @@ export default function ContractFlag() {
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState(null)
   const [paying, setPaying] = useState(false)
+  const [isSample, setIsSample] = useState(false)
   const fileRef = useRef()
 
   useEffect(() => {
@@ -180,6 +197,7 @@ export default function ContractFlag() {
     if (!file) return
     setFileName(file.name)
     setErrorMsg('')
+    setIsSample(false)
     if (file.name.toLowerCase().endsWith('.pdf')) {
       try { setContractText(await extractPdfText(file)) }
       catch (e) { setErrorMsg(e.message) }
@@ -194,6 +212,12 @@ export default function ContractFlag() {
     if (!contractText.trim()) return
     setStage('analyzing')
     setProgress(0)
+    // Sample contract uses a cached result - no API call, no cost
+    if (isSample) {
+      let p = 0
+      const t = setInterval(() => { p += 20; setProgress(Math.min(p, 100)); if (p >= 100) { clearInterval(t); setTimeout(() => { setResult(SAMPLE_RESULT); setStage('preview') }, 200) } }, 150)
+      return
+    }
     const tick = setInterval(() => setProgress(p => p < 85 ? p + Math.random() * 5 : p), 400)
     try {
       const res = await fetch('/api/analyze', {
@@ -277,11 +301,11 @@ export default function ContractFlag() {
       </div>
       <div style={{textAlign:'center',color:'#9CA3AF',fontSize:12,margin:'0 0 10px'}}>— or paste contract text —</div>
       <textarea rows={7} placeholder="Paste the full contract text here..." value={contractText}
-        onChange={e=>{setContractText(e.target.value);setFileName('');setErrorMsg('')}}
+        onChange={e=>{setContractText(e.target.value);setFileName('');setErrorMsg('');setIsSample(false)}}
         style={{width:'100%',boxSizing:'border-box',border:'1px solid #E5E7EB',borderRadius:10,padding:'12px 14px',fontSize:13,color:'#374151',lineHeight:1.6,resize:'vertical',fontFamily:'inherit',background:'#FAFAFA',outline:'none'}}/>
       {errorMsg && <div style={{marginTop:8,fontSize:12,color:'#EF4444'}}>{errorMsg}</div>}
       <div style={{display:'flex',gap:10,marginTop:14}}>
-        <button onClick={()=>{setContractText(SAMPLE_CONTRACT);setFileName('sample_saas_agreement.txt');setErrorMsg('')}}
+        <button onClick={()=>{setContractText(SAMPLE_CONTRACT);setFileName('sample_saas_agreement.txt');setErrorMsg('');setIsSample(true)}}
           style={{flex:1,padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer'}}>
           Try sample
         </button>
