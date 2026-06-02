@@ -3,6 +3,14 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
+const track = (event, params) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', event, params || {})
+    }
+  } catch (e) {}
+}
+
 const reportError = (error, context) => {
   try {
     fetch('/api/report-error', {
@@ -132,6 +140,7 @@ function SuccessContent() {
       if (cachedResult) {
         const parsed = JSON.parse(cachedResult)
         // Verify payment silently in background, show result immediately
+        track('purchase', { value: 29, currency: 'USD' })
         setResult(parsed)
         setStage('result')
         sessionStorage.removeItem('cf_result')
@@ -160,6 +169,7 @@ function SuccessContent() {
         reportError(msg, 'success-verify'); setErrorMsg(msg); setStage('error'); return
       }
       sessionStorage.removeItem('cf_contract')
+      track('purchase', { value: 29, currency: 'USD' })
       setResult(parsed)
       setStage('result')
     } catch (e) {
