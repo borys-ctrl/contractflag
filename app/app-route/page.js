@@ -151,6 +151,53 @@ function LockedFlagCard({ flag, idx }) {
   )
 }
 
+function EmailUnlockBox({ result, onUnlock }) {
+  const [email, setEmail] = useState('')
+  const [sending, setSending] = useState(false)
+  const [err, setErr] = useState('')
+
+  const validEmail = (e) => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return false
+    const [local, domain] = e.split('@')
+    const tld = domain.split('.').pop()
+    if (!/^[a-zA-Z]{2,}$/.test(tld)) return false
+    if (/^\d+$/.test(local) && /^\d+$/.test(domain.split('.')[0])) return false
+    if (/^(.)\1+$/.test(local) && /^(.)\1+$/.test(domain.split('.')[0])) return false
+    return true
+  }
+
+  const send = async () => {
+    setErr('')
+    if (!validEmail(email)) { setErr('Please enter a valid email address.'); return }
+    if (sending) return
+    setSending(true)
+    try {
+      fetch('/api/capture-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, riskScore: result?.summary?.risk_score, overallRisk: result?.summary?.overall_risk }),
+      }).catch(() => {})
+    } catch (e) {}
+    setTimeout(() => onUnlock(), 400)
+  }
+
+  return (
+    <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:12,padding:'16px 18px',marginBottom:12}}>
+      <div style={{fontSize:14,fontWeight:600,color:'#9A3412',marginBottom:4}}>👀 See your #1 highest-risk clause — free</div>
+      <div style={{fontSize:12,color:'#9A3412',opacity:0.8,marginBottom:12,lineHeight:1.55}}>Enter your email and we'll unlock the most dangerous clause in your contract right now — no payment needed. We'll send a confirmation to make sure it's really you.</div>
+      <div style={{display:'flex',gap:8}}>
+        <input type="email" placeholder="you@company.com" value={email} onChange={e=>{setEmail(e.target.value);setErr('')}}
+          style={{flex:1,padding:'9px 12px',border:`1px solid ${err?'#EF4444':'#FDBA74'}`,borderRadius:6,fontSize:13,outline:'none',background:'#fff'}}/>
+        <button onClick={send} disabled={sending}
+          style={{padding:'9px 18px',background:sending?'#9A3412':'#EA580C',color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:sending?'default':'pointer',whiteSpace:'nowrap'}}>
+          {sending ? 'Unlocking…' : 'Unlock clause #1'}
+        </button>
+      </div>
+      {err && <div style={{fontSize:12,color:'#EF4444',marginTop:6}}>{err}</div>}
+    </div>
+  )
+}
+
 export default function ContractFlag() {
   const [stage, setStage] = useState('upload') // upload | analyzing | preview | paying
   const [contractText, setContractText] = useState('')
@@ -162,6 +209,7 @@ export default function ContractFlag() {
   const [result, setResult] = useState(null)
   const [paying, setPaying] = useState(false)
   const [isSample, setIsSample] = useState(false)
+  const [emailUnlocked, setEmailUnlocked] = useState(false)
   const fileRef = useRef()
 
   useEffect(() => {
@@ -261,7 +309,7 @@ export default function ContractFlag() {
 
   const reset = () => {
     setStage('upload'); setContractText(''); setFileName('')
-    setResult(null); setErrorMsg(''); setProgress(0); setPaying(false)
+    setResult(null); setErrorMsg(''); setProgress(0); setPaying(false); setEmailUnlocked(false); setIsSample(false)
   }
 
   const base = { fontFamily: 'system-ui,sans-serif', padding: '24px 20px', maxWidth: 640, margin: '0 auto' }
@@ -388,16 +436,27 @@ export default function ContractFlag() {
         {redFlags.length > 0 && (
           <div style={{marginBottom:8}}>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:'#991B1B',marginBottom:10,textTransform:'uppercase'}}>
-              🔒 {redFlags.length} high risk clause{redFlags.length!==1?'s':''} — locked
+              🔒 {redFlags.length} high risk clause{redFlags.length!==1?'s':''} — {emailUnlocked ? '1 unlocked' : 'locked'}
             </div>
-            {redFlags.map((f,i) => <LockedFlagCard key={i} flag={f} idx={freeFlags.length+i}/>)}
+            {/* Email unlock box - shown only before unlock */}
+            {!emailUnlocked && (
+              <EmailUnlockBox result={result} onUnlock={() => setEmailUnlocked(true)} />
+            )}
+            {/* First red flag: revealed if unlocked, else locked */}
+            {emailUnlocked
+              ? <FlagCard flag={redFlags[0]} idx={freeFlags.length} />
+              : <LockedFlagCard flag={redFlags[0]} idx={freeFlags.length} />}
+            {/* Remaining red flags always locked */}
+            {redFlags.slice(1).map((f,i) => <LockedFlagCard key={i} flag={f} idx={freeFlags.length+1+i}/>)}
           </div>
         )}
 
         {/* Paywall CTA */}
         <div style={{background:'#111827',borderRadius:14,padding:'20px 24px',marginTop:8,marginBottom:16}}>
           <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'#fff',marginBottom:6}}>
-            Unlock {redFlags.length} high-risk clause{redFlags.length!==1?'s':''} — $29
+            {emailUnlocked
+              ? `Unlock the remaining ${redFlags.length - 1} high-risk clause${redFlags.length-1!==1?'s':''} — $29`
+              : `Unlock all ${redFlags.length} high-risk clause${redFlags.length!==1?'s':''} — $29`}
           </div>
           <div style={{fontSize:13,color:'#9CA3AF',marginBottom:16,lineHeight:1.6}}>
             See exactly what each red flag says, what it means in plain English, the worst-case outcome, and your negotiation counter-move.
