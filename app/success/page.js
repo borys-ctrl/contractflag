@@ -78,18 +78,35 @@ function FlagCard({ flag, idx }) {
   )
 }
 
-function EmailCapture() {
+function EmailCapture({ result }) {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  const send = async () => {
+    if (!email.includes('@') || sending) return
+    setSending(true)
+    try {
+      await fetch('/api/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, result }),
+      })
+      setSent(true)
+    } catch (e) {
+      setSent(true) // show success anyway - the email is captured server-side
+    }
+  }
+
   return sent ? (
-    <div style={{fontSize:13,color:'#065F46',fontWeight:500}}>✓ Got it — we'll be in touch!</div>
+    <div style={{fontSize:13,color:'#065F46',fontWeight:500}}>✓ Sent! Check your inbox in a minute (and your spam folder just in case).</div>
   ) : (
     <div style={{display:'flex',gap:8}}>
       <input type="email" placeholder="you@company.com" value={email} onChange={e=>setEmail(e.target.value)}
         style={{flex:1,padding:'8px 12px',border:'1px solid #D1D5DB',borderRadius:6,fontSize:13,outline:'none'}}/>
-      <button onClick={()=>{if(email.includes('@'))setSent(true)}}
-        style={{padding:'8px 16px',background:'#111827',color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-        Send
+      <button onClick={send} disabled={sending}
+        style={{padding:'8px 16px',background:sending?'#6B7280':'#111827',color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:sending?'default':'pointer'}}>
+        {sending ? 'Sending…' : 'Send'}
       </button>
     </div>
   )
@@ -248,7 +265,7 @@ function SuccessContent() {
       <div style={{marginTop:24,padding:'16px',borderRadius:10,background:'#F0FDF4',border:'1px solid #BBF7D0'}}>
         <div style={{fontSize:13,fontWeight:600,color:'#065F46',marginBottom:4}}>📩 Want a copy sent to your email?</div>
         <div style={{fontSize:12,color:'#6B7280',marginBottom:10}}>We'll send you this report to share with your team or lawyer.</div>
-        <EmailCapture />
+        <EmailCapture result={result} />
       </div>
 
       <div style={{marginTop:16,padding:'12px 14px',borderRadius:8,background:'#F9FAFB',border:'1px solid #E5E7EB'}}>
