@@ -230,6 +230,13 @@ export default function ContractFlag() {
     document.head.appendChild(script)
   }, [])
 
+  // Fire paywall_view whenever the preview screen is shown (covers both sample and real paths)
+  useEffect(() => {
+    if (stage === 'preview' && result) {
+      track('paywall_view', { risk_score: result?.summary?.risk_score })
+    }
+  }, [stage, result])
+
   const extractPdfText = async (file) => {
     setPdfLoading(true)
     try {
@@ -286,7 +293,6 @@ export default function ContractFlag() {
       clearInterval(tick)
       setProgress(100)
       if (parsed.error) { const msg = typeof parsed.message === 'string' ? parsed.message : typeof parsed.error === 'string' ? parsed.error : 'Analysis failed. Please try again.'; reportError(msg, 'analyze-api-error'); setErrorMsg(msg); setStage('upload'); return }
-      track('paywall_view', { risk_score: parsed?.summary?.risk_score })
       setTimeout(() => { setResult(parsed); setStage('preview') }, 300)
     } catch (e) {
       clearInterval(tick)
