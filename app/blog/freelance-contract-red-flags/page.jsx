@@ -126,7 +126,11 @@ export default function Page() {
       <main style={s.main}>
         <BlogHeader />
         <article>
-          <p style={s.kicker}>Contracts · Freelancing</p>
+          <p style={s.kicker}>
+            <Link href="/blog" style={s.backLink}>
+              ← All guides
+            </Link>
+          </p>
           <h1 style={s.h1}>10 Freelance Contract Red Flags to Catch Before You Sign</h1>
 
           <p style={s.lede}>
