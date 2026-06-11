@@ -10,6 +10,11 @@ export const metadata = {
 
 const posts = [
   {
+    slug: "ai-contract-review",
+    title: "AI Contract Review in 2026: What It Catches, What It Misses, What It Costs",
+    desc: "An honest breakdown of AI contract review — what it reliably flags, where a lawyer still wins, and the cost math for freelancers and small businesses.",
+  },
+  {
     slug: "indemnification-clause-explained",
     title: "Indemnification Clauses Explained in Plain English (With Examples)",
     desc: "What 'indemnify, defend, and hold harmless' actually commits you to — and the three exact sentences to negotiate so a $4,000 project can't become unlimited liability.",

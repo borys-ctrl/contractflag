@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { s, CTA } from "../blogStyles";
+import Related from "../Related";
 
 export const metadata = {
   title: "Indemnification Clauses Explained in Plain English (With Examples)",
@@ -158,6 +159,8 @@ export default function Page() {
           </p>
 
           <CTA />
+
+          <Related current="indemnification-clause-explained" />
 
           <p style={s.footer}>
             This article is for informational purposes only and is not legal advice. For high-value

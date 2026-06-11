@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { s, CTA } from "../blogStyles";
+import Related from "../Related";
 
 export const metadata = {
   title: "How to Review a Contract Without a Lawyer: 7-Step Checklist",
@@ -151,6 +152,8 @@ export default function Page() {
           </p>
 
           <CTA />
+
+          <Related current="review-contract-without-lawyer" />
 
           <p style={s.footer}>
             This article is for informational purposes only and is not legal advice.

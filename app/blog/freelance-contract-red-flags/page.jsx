@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Related from "../Related";
 
 export const metadata = {
   title: "10 Freelance Contract Red Flags to Catch Before You Sign (2026)",
@@ -252,6 +253,8 @@ export default function Page() {
           </p>
 
           <CTA />
+
+          <Related current="freelance-contract-red-flags" />
 
           <p style={s.footer}>
             This article is for informational purposes only and is not legal advice. For complex or

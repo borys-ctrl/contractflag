@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { s, CTA } from "../blogStyles";
+import Related from "../Related";
 
 export const metadata = {
   title: "What to Look for in an NDA Before Signing: 8 Red Flags",
@@ -157,6 +158,8 @@ export default function Page() {
           </p>
 
           <CTA />
+
+          <Related current="nda-red-flags-before-signing" />
 
           <p style={s.footer}>
             This article is for informational purposes only and is not legal advice.

@@ -7,5 +7,6 @@ export default function sitemap() {
     { url: `${base}/blog/review-contract-without-lawyer`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/blog/nda-red-flags-before-signing`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/blog/indemnification-clause-explained`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/blog/ai-contract-review`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
   ];
 }
