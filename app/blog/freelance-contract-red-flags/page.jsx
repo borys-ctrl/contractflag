@@ -1,8 +1,6 @@
-import React from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "10 Freelance Contract Red Flags to Catch Before You Sign (2026)",
   description:
     "These 10 freelance contract red flags cost freelancers thousands every year. Learn how to spot unpaid revision traps, IP grabs, and payment term tricks before signing.",
@@ -35,17 +33,7 @@ function CTA() {
   );
 }
 
-function Flag({
-  n,
-  title,
-  children,
-  fix,
-}: {
-  n: number;
-  title: string;
-  children: React.ReactNode;
-  fix: string;
-}) {
+function Flag({ n, title, children, fix }) {
   return (
     <section className="mb-8">
       <h2 className="mb-2 text-2xl font-bold text-gray-900">
