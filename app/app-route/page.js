@@ -67,18 +67,29 @@ const SAMPLE_RESULT = {
 }
 
 const SEV = {
-  RED:    { bg: '#FEE2E2', text: '#991B1B', border: '#FECACA', dot: '#EF4444', label: 'High Risk' },
-  YELLOW: { bg: '#FEF3C7', text: '#92400E', border: '#FDE68A', dot: '#F59E0B', label: 'Medium Risk' },
-  GREEN:  { bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0', dot: '#10B981', label: 'Low Risk' },
+  RED:    { bg: '#FDF3F2', text: '#B42318', border: '#F5DDDA', dot: '#DC2626', label: 'High Risk' },
+  YELLOW: { bg: '#FDF8EC', text: '#92400E', border: '#F2E5C2', dot: '#D97706', label: 'Medium Risk' },
+  GREEN:  { bg: '#F1FAF4', text: '#065F46', border: '#D3EEDD', dot: '#10B981', label: 'Low Risk' },
 }
 
 const normalize = s => { if (!s) return "YELLOW"; const u = s.toUpperCase(); if (u === "RED" || u === "HIGH") return "RED"; if (u === "GREEN" || u === "LOW") return "GREEN"; return "YELLOW"; }
 
 const RISK = {
-  HIGH:   { bg: '#FEE2E2', text: '#991B1B' },
-  MEDIUM: { bg: '#FEF3C7', text: '#92400E' },
-  LOW:    { bg: '#D1FAE5', text: '#065F46' },
+  HIGH:   { bg: '#FDF3F2', text: '#B42318' },
+  MEDIUM: { bg: '#FDF8EC', text: '#92400E' },
+  LOW:    { bg: '#F1FAF4', text: '#065F46' },
 }
+
+const ink = '#16140F'
+const sub = '#5C5A54'
+const faint = '#8A877F'
+const gold = '#E5C97E'
+const goldDark = '#9A7B2D'
+const line = '#ECEAE4'
+const cream = '#FBFAF7'
+const serif = "'DM Serif Display',Georgia,serif"
+const sans = "'DM Sans',system-ui,sans-serif"
+const mono = "'DM Mono',monospace"
 
 function Gauge({ score }) {
   const r = 52, cx = 64, cy = 64
@@ -87,11 +98,11 @@ function Gauge({ score }) {
   const color = score >= 70 ? '#EF4444' : score >= 40 ? '#F59E0B' : '#10B981'
   return (
     <svg width="128" height="80" viewBox="0 0 128 80">
-      <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`} fill="none" stroke="#E5E7EB" strokeWidth="10" strokeLinecap="round"/>
+      <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="10" strokeLinecap="round"/>
       <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
         strokeDasharray={`${filled} ${half}`} style={{transition:'stroke-dasharray 1s ease'}}/>
-      <text x={cx} y={cy-4} textAnchor="middle" fontSize="22" fontWeight="700" fill={color} fontFamily="Georgia,serif">{score}</text>
-      <text x={cx} y={cy+14} textAnchor="middle" fontSize="10" fill="#6B7280" fontFamily="sans-serif" letterSpacing="0.08em">RISK SCORE</text>
+      <text x={cx} y={cy-4} textAnchor="middle" fontSize="22" fontWeight="700" fill={color} fontFamily={serif}>{score}</text>
+      <text x={cx} y={cy+14} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.5)" fontFamily={sans} letterSpacing="0.08em">RISK SCORE</text>
     </svg>
   )
 }
@@ -100,30 +111,30 @@ function FlagCard({ flag, idx }) {
   const [open, setOpen] = useState(false)
   const c = SEV[normalize(flag.severity)] || SEV.YELLOW
   return (
-    <div style={{border:`1px solid ${open?c.border:'#E5E7EB'}`,borderRadius:12,marginBottom:10,background:open?c.bg:'#FAFAFA',transition:'all 0.2s',overflow:'hidden'}}>
-      <button onClick={()=>setOpen(o=>!o)} style={{width:'100%',display:'flex',alignItems:'center',gap:12,padding:'14px 16px',background:'transparent',border:'none',cursor:'pointer',textAlign:'left'}}>
-        <span style={{width:24,height:24,borderRadius:'50%',background:c.dot,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}}>{idx+1}</span>
-        <span style={{flex:1,fontWeight:600,fontSize:14,color:'#111827'}}>{flag.category}</span>
-        <span style={{fontSize:10,fontWeight:700,letterSpacing:'0.07em',padding:'3px 9px',borderRadius:99,background:c.bg,color:c.text,border:`1px solid ${c.border}`}}>{c.label}</span>
-        <span style={{fontSize:18,color:'#9CA3AF',marginLeft:4}}>{open?'−':'+'}</span>
+    <div style={{border:`1px solid ${open?c.border:line}`,borderRadius:14,marginBottom:12,background:open?c.bg:cream,transition:'all 0.2s',overflow:'hidden'}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:'100%',display:'flex',alignItems:'center',gap:12,padding:'16px 18px',background:'transparent',border:'none',cursor:'pointer',textAlign:'left',fontFamily:sans}}>
+        <span style={{width:26,height:26,borderRadius:'50%',background:c.dot,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>{idx+1}</span>
+        <span style={{flex:1,fontWeight:600,fontSize:14.5,color:ink}}>{flag.category}</span>
+        <span style={{fontSize:10,fontWeight:700,letterSpacing:'0.07em',padding:'4px 10px',borderRadius:99,background:c.bg,color:c.text,border:`1px solid ${c.border}`}}>{c.label}</span>
+        <span style={{fontSize:18,color:faint,marginLeft:4}}>{open?'−':'+'}</span>
       </button>
       {open && (
-        <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{background:'#F3F4F6',borderRadius:8,padding:'10px 14px',borderLeft:`3px solid ${c.dot}`}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:'#9CA3AF',marginBottom:4}}>CONTRACT LANGUAGE</div>
-            <div style={{fontSize:12,color:'#374151',lineHeight:1.65,fontStyle:'italic'}}>"{flag.clause_excerpt}"</div>
+        <div style={{padding:'0 18px 18px',display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{background:'#fff',borderRadius:10,padding:'12px 16px',borderLeft:`3px solid ${c.dot}`,border:`1px solid ${line}`}}>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:faint,marginBottom:5,fontFamily:mono}}>CONTRACT LANGUAGE</div>
+            <div style={{fontSize:13,color:sub,lineHeight:1.7,fontStyle:'italic'}}>"{flag.clause_excerpt}"</div>
           </div>
           <div>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:'#9CA3AF',marginBottom:4}}>WHAT THIS MEANS</div>
-            <div style={{fontSize:13,color:'#1F2937',lineHeight:1.65}}>{flag.plain_english}</div>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:faint,marginBottom:5,fontFamily:mono}}>WHAT THIS MEANS</div>
+            <div style={{fontSize:14,color:ink,lineHeight:1.7}}>{flag.plain_english}</div>
           </div>
-          <div style={{background:'#FEF3C7',borderRadius:8,padding:'10px 14px'}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:'#92400E',marginBottom:4}}>WORST CASE</div>
-            <div style={{fontSize:13,color:'#78350F',lineHeight:1.65}}>{flag.why_it_matters}</div>
+          <div style={{background:'#FDF8EC',borderRadius:10,padding:'12px 16px',border:'1px solid #F2E5C2'}}>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:'#92400E',marginBottom:5,fontFamily:mono}}>WORST CASE</div>
+            <div style={{fontSize:13.5,color:'#78350F',lineHeight:1.7}}>{flag.why_it_matters}</div>
           </div>
-          <div style={{background:'#EFF6FF',borderRadius:8,padding:'10px 14px'}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:'#1D4ED8',marginBottom:4}}>YOUR COUNTER-MOVE</div>
-            <div style={{fontSize:13,color:'#1E40AF',lineHeight:1.65}}>{flag.counter_move}</div>
+          <div style={{background:'#F4F8FD',borderRadius:10,padding:'12px 16px',border:'1px solid #DCE8F7'}}>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.08em',color:'#1D4ED8',marginBottom:5,fontFamily:mono}}>YOUR COUNTER-MOVE</div>
+            <div style={{fontSize:13.5,color:'#1E40AF',lineHeight:1.7}}>{flag.counter_move}</div>
           </div>
         </div>
       )}
@@ -134,25 +145,23 @@ function FlagCard({ flag, idx }) {
 function LockedFlagCard({ flag, idx }) {
   const c = SEV.RED
   return (
-    <div style={{border:`1px solid ${c.border}`,borderRadius:12,marginBottom:10,background:c.bg,overflow:'hidden',position:'relative'}}>
-      {/* Blurred content */}
+    <div style={{border:`1px solid ${c.border}`,borderRadius:14,marginBottom:12,background:c.bg,overflow:'hidden',position:'relative'}}>
       <div style={{filter:'blur(6px)',userSelect:'none',pointerEvents:'none'}}>
-        <div style={{display:'flex',alignItems:'center',gap:12,padding:'14px 16px'}}>
-          <span style={{width:24,height:24,borderRadius:'50%',background:c.dot,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}}>{idx+1}</span>
-          <span style={{flex:1,fontWeight:600,fontSize:14,color:'#111827'}}>{flag.category}</span>
-          <span style={{fontSize:10,fontWeight:700,padding:'3px 9px',borderRadius:99,background:c.bg,color:c.text,border:`1px solid ${c.border}`}}>{c.label}</span>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:'16px 18px'}}>
+          <span style={{width:26,height:26,borderRadius:'50%',background:c.dot,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>{idx+1}</span>
+          <span style={{flex:1,fontWeight:600,fontSize:14.5,color:ink}}>{flag.category}</span>
+          <span style={{fontSize:10,fontWeight:700,padding:'4px 10px',borderRadius:99,background:c.bg,color:c.text,border:`1px solid ${c.border}`}}>{c.label}</span>
         </div>
-        <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:10}}>
-          <div style={{background:'#F3F4F6',borderRadius:8,padding:'10px 14px',height:60}}/>
-          <div style={{background:'#fff',borderRadius:8,padding:'10px 14px',height:50}}/>
-          <div style={{background:'#FEF3C7',borderRadius:8,padding:'10px 14px',height:44}}/>
+        <div style={{padding:'0 18px 18px',display:'flex',flexDirection:'column',gap:10}}>
+          <div style={{background:'#fff',borderRadius:10,padding:'12px 16px',height:60}}/>
+          <div style={{background:'#fff',borderRadius:10,padding:'12px 16px',height:50}}/>
+          <div style={{background:'#FDF8EC',borderRadius:10,padding:'12px 16px',height:44}}/>
         </div>
       </div>
-      {/* Lock overlay */}
       <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{background:'rgba(255,255,255,0.92)',borderRadius:10,padding:'10px 18px',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 12px rgba(0,0,0,0.08)'}}>
+        <div style={{background:'rgba(255,255,255,0.94)',borderRadius:12,padding:'12px 20px',display:'flex',alignItems:'center',gap:9,boxShadow:'0 4px 18px rgba(22,20,15,0.1)',border:`1px solid ${line}`}}>
           <span style={{fontSize:16}}>🔒</span>
-          <span style={{fontSize:13,fontWeight:600,color:'#991B1B'}}>Unlock to see this HIGH RISK clause</span>
+          <span style={{fontSize:13,fontWeight:600,color:'#B42318'}}>Unlock to see this HIGH RISK clause</span>
         </div>
       </div>
     </div>
@@ -190,18 +199,18 @@ function EmailUnlockBox({ result, onUnlock }) {
   }
 
   return (
-    <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:12,padding:'16px 18px',marginBottom:12}}>
-      <div style={{fontSize:14,fontWeight:600,color:'#9A3412',marginBottom:4}}>👀 See your #1 highest-risk clause — free</div>
-      <div style={{fontSize:12,color:'#9A3412',opacity:0.8,marginBottom:12,lineHeight:1.55}}>Enter your email and we'll unlock the most dangerous clause in your contract right now — no payment needed. We'll send a confirmation to make sure it's really you.</div>
+    <div style={{background:'#FBF6E9',border:'1px solid #F2E5C2',borderRadius:14,padding:'18px 20px',marginBottom:14}}>
+      <div style={{fontSize:14.5,fontWeight:600,color:'#7A5C16',marginBottom:5}}>👀 See your #1 highest-risk clause — free</div>
+      <div style={{fontSize:12.5,color:'#7A5C16',opacity:0.85,marginBottom:14,lineHeight:1.6}}>Enter your email and we'll unlock the most dangerous clause in your contract right now — no payment needed. We'll send a confirmation to make sure it's really you.</div>
       <div style={{display:'flex',gap:8}}>
         <input type="email" placeholder="you@company.com" value={email} onChange={e=>{setEmail(e.target.value);setErr('')}}
-          style={{flex:1,padding:'9px 12px',border:`1px solid ${err?'#EF4444':'#FDBA74'}`,borderRadius:6,fontSize:13,outline:'none',background:'#fff'}}/>
+          style={{flex:1,padding:'11px 14px',border:`1px solid ${err?'#DC2626':'#E2D5AC'}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',fontFamily:sans}}/>
         <button onClick={send} disabled={sending}
-          style={{padding:'9px 18px',background:sending?'#9A3412':'#EA580C',color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:sending?'default':'pointer',whiteSpace:'nowrap'}}>
+          style={{padding:'11px 20px',background:sending?'#7A5C16':ink,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:sending?'default':'pointer',whiteSpace:'nowrap',fontFamily:sans}}>
           {sending ? 'Unlocking…' : 'Unlock clause #1'}
         </button>
       </div>
-      {err && <div style={{fontSize:12,color:'#EF4444',marginTop:6}}>{err}</div>}
+      {err && <div style={{fontSize:12,color:'#DC2626',marginTop:6}}>{err}</div>}
     </div>
   )
 }
@@ -230,7 +239,6 @@ export default function ContractFlag() {
     document.head.appendChild(script)
   }, [])
 
-  // Fire paywall_view whenever the preview screen is shown (covers both sample and real paths)
   useEffect(() => {
     if (stage === 'preview' && result) {
       track('paywall_view', { risk_score: result?.summary?.risk_score })
@@ -276,7 +284,6 @@ export default function ContractFlag() {
     track(isSample ? 'sample_analyze' : 'analyze_start')
     setStage('analyzing')
     setProgress(0)
-    // Sample contract uses a cached result - no API call, no cost
     if (isSample) {
       let p = 0
       const t = setInterval(() => { p += 20; setProgress(Math.min(p, 100)); if (p >= 100) { clearInterval(t); setTimeout(() => { setResult(SAMPLE_RESULT); setStage('preview') }, 200) } }, 150)
@@ -329,59 +336,67 @@ export default function ContractFlag() {
     setResult(null); setErrorMsg(''); setProgress(0); setPaying(false); setEmailUnlocked(false); setIsSample(false)
   }
 
-  const base = { fontFamily: 'system-ui,sans-serif', padding: '24px 20px', maxWidth: 640, margin: '0 auto' }
+  const base = { fontFamily: sans, padding: '32px 20px 64px', maxWidth: 680, margin: '0 auto', color: ink }
+
+  const Fonts = () => (
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  )
 
   const Header = () => (
-    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:28}}>
-      <div style={{width:36,height:36,background:'#111827',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>⚑</div>
-      <div>
-        <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#111827',lineHeight:1}}>ContractFlag</div>
-        <div style={{fontSize:11,color:'#9CA3AF',letterSpacing:'0.06em'}}>CONTRACT RISK INTELLIGENCE</div>
-      </div>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:36}}>
+      <a href="/" style={{display:'flex',alignItems:'center',gap:10,textDecoration:'none',color:ink}}>
+        <div style={{width:34,height:34,background:gold,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,color:ink}}>⚑</div>
+        <div>
+          <div style={{fontFamily:serif,fontSize:20,color:ink,lineHeight:1}}>ContractFlag</div>
+          <div style={{fontSize:10,color:goldDark,letterSpacing:'0.1em',fontFamily:mono,marginTop:3}}>CONTRACT RISK INTELLIGENCE</div>
+        </div>
+      </a>
+      <a href="/" style={{fontSize:13,color:sub,textDecoration:'none',fontWeight:500}}>← Home</a>
     </div>
   )
 
   // ── UPLOAD ──────────────────────────────────────────────────
   if (stage === 'upload') return (
     <div style={base}>
+      <Fonts/>
       <Header/>
-      <div style={{marginBottom:20}}>
-        <div style={{fontFamily:'Georgia,serif',fontSize:22,color:'#111827',marginBottom:6}}>Find the hidden traps in your contract</div>
-        <div style={{fontSize:13,color:'#6B7280',lineHeight:1.6}}>Upload any vendor, SaaS, or supplier contract. Get a free preview of your risks — then unlock the full report for $29.</div>
+      <div style={{marginBottom:26}}>
+        <div style={{fontFamily:serif,fontSize:30,color:ink,marginBottom:10,lineHeight:1.2}}>Find the hidden traps in your contract</div>
+        <div style={{fontSize:15,color:sub,lineHeight:1.7}}>Upload any vendor, SaaS, or supplier contract. Get a free preview of your risks — then unlock the full report for $29.</div>
       </div>
       <div
         onDragOver={e=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)}
         onDrop={e=>{e.preventDefault();setDragging(false);handleFile(e.dataTransfer.files[0])}}
         onClick={()=>fileRef.current.click()}
-        style={{border:`2px dashed ${dragging?'#6366F1':'#D1D5DB'}`,borderRadius:14,padding:'28px 24px',textAlign:'center',cursor:'pointer',marginBottom:16,background:dragging?'#EEF2FF':'#F9FAFB',transition:'all 0.2s'}}
+        style={{border:`2px dashed ${dragging?goldDark:'#D9D6CE'}`,borderRadius:16,padding:'36px 26px',textAlign:'center',cursor:'pointer',marginBottom:18,background:dragging?'#FBF6E9':cream,transition:'all 0.2s'}}
       >
-        <div style={{fontSize:32,marginBottom:8}}>{pdfLoading?'⏳':'📄'}</div>
-        <div style={{fontWeight:600,fontSize:14,color:'#111827',marginBottom:3}}>
+        <div style={{fontSize:34,marginBottom:10}}>{pdfLoading?'⏳':'📄'}</div>
+        <div style={{fontWeight:600,fontSize:15,color:ink,marginBottom:4}}>
           {pdfLoading?'Reading PDF…':fileName||'Drop your contract here'}
         </div>
-        <div style={{fontSize:12,color:'#9CA3AF'}}>
+        <div style={{fontSize:13,color:faint}}>
           {pdfLoading?'Extracting text…':fileName?'File loaded — ready to analyze':'PDF or TXT — click to browse or drag and drop'}
         </div>
         <input ref={fileRef} type="file" accept=".txt,.pdf" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
       </div>
-      <div style={{textAlign:'center',color:'#9CA3AF',fontSize:12,margin:'0 0 10px'}}>— or paste contract text —</div>
+      <div style={{textAlign:'center',color:faint,fontSize:12,margin:'0 0 12px',fontFamily:mono,letterSpacing:'0.05em'}}>— OR PASTE CONTRACT TEXT —</div>
       <textarea rows={7} placeholder="Paste the full contract text here..." value={contractText}
         onChange={e=>{setContractText(e.target.value);setFileName('');setErrorMsg('');setIsSample(false)}}
-        style={{width:'100%',boxSizing:'border-box',border:'1px solid #E5E7EB',borderRadius:10,padding:'12px 14px',fontSize:13,color:'#374151',lineHeight:1.6,resize:'vertical',fontFamily:'inherit',background:'#FAFAFA',outline:'none'}}/>
-      {errorMsg && <div style={{marginTop:8,fontSize:12,color:'#EF4444'}}>{errorMsg}</div>}
-      <div style={{display:'flex',gap:10,marginTop:14}}>
+        style={{width:'100%',boxSizing:'border-box',border:`1px solid ${line}`,borderRadius:12,padding:'14px 16px',fontSize:13.5,color:sub,lineHeight:1.65,resize:'vertical',fontFamily:sans,background:cream,outline:'none'}}/>
+      {errorMsg && <div style={{marginTop:8,fontSize:12.5,color:'#DC2626'}}>{errorMsg}</div>}
+      <div style={{display:'flex',gap:12,marginTop:16}}>
         <button onClick={()=>{setContractText(SAMPLE_CONTRACT);setFileName('sample_saas_agreement.txt');setErrorMsg('');setIsSample(true)}}
-          style={{flex:1,padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer'}}>
+          style={{flex:1,padding:'13px 0',border:`1px solid ${line}`,borderRadius:10,background:'#fff',color:sub,fontSize:13.5,fontWeight:500,cursor:'pointer',fontFamily:sans}}>
           Try sample
         </button>
         <button onClick={analyze} disabled={!contractText.trim()||pdfLoading}
-          style={{flex:2,padding:'11px 0',border:'none',borderRadius:8,background:contractText.trim()&&!pdfLoading?'#111827':'#E5E7EB',color:contractText.trim()&&!pdfLoading?'#fff':'#9CA3AF',fontSize:14,fontWeight:600,cursor:contractText.trim()&&!pdfLoading?'pointer':'default',transition:'background 0.2s'}}>
+          style={{flex:2,padding:'13px 0',border:'none',borderRadius:10,background:contractText.trim()&&!pdfLoading?ink:line,color:contractText.trim()&&!pdfLoading?'#fff':faint,fontSize:14.5,fontWeight:600,cursor:contractText.trim()&&!pdfLoading?'pointer':'default',transition:'background 0.2s',fontFamily:sans}}>
           Analyze Contract — Free Preview →
         </button>
       </div>
-      <div style={{marginTop:16,display:'flex',alignItems:'center',justifyContent:'center',gap:16,flexWrap:'wrap'}}>
+      <div style={{marginTop:20,display:'flex',alignItems:'center',justifyContent:'center',gap:18,flexWrap:'wrap'}}>
         {['🔒 Your contract is never stored','📄 PDF & TXT supported','⚑ Free preview, unlock full report for $29'].map(t=>(
-          <span key={t} style={{fontSize:11,color:'#9CA3AF'}}>{t}</span>
+          <span key={t} style={{fontSize:11.5,color:faint}}>{t}</span>
         ))}
       </div>
     </div>
@@ -390,15 +405,16 @@ export default function ContractFlag() {
   // ── ANALYZING ───────────────────────────────────────────────
   if (stage === 'analyzing') return (
     <div style={{...base,textAlign:'center'}}>
+      <Fonts/>
       <Header/>
-      <div style={{padding:'40px 0'}}>
-        <div style={{fontSize:42,marginBottom:20}}>⚑</div>
-        <div style={{fontFamily:'Georgia,serif',fontSize:22,color:'#111827',marginBottom:6}}>Reading your contract</div>
-        <div style={{fontSize:13,color:'#9CA3AF',marginBottom:32}}>Scanning all 8 risk categories…</div>
-        <div style={{background:'#F3F4F6',borderRadius:99,height:6,overflow:'hidden',maxWidth:320,margin:'0 auto'}}>
-          <div style={{height:'100%',background:'#111827',borderRadius:99,width:`${progress}%`,transition:'width 0.4s ease'}}/>
+      <div style={{padding:'48px 0'}}>
+        <div style={{fontSize:44,marginBottom:22}}>⚑</div>
+        <div style={{fontFamily:serif,fontSize:26,color:ink,marginBottom:8}}>Reading your contract</div>
+        <div style={{fontSize:14,color:faint,marginBottom:36}}>Scanning all 8 risk categories…</div>
+        <div style={{background:line,borderRadius:99,height:6,overflow:'hidden',maxWidth:320,margin:'0 auto'}}>
+          <div style={{height:'100%',background:ink,borderRadius:99,width:`${progress}%`,transition:'width 0.4s ease'}}/>
         </div>
-        <div style={{fontSize:12,color:'#9CA3AF',marginTop:10}}>{Math.round(progress)}%</div>
+        <div style={{fontSize:12.5,color:faint,marginTop:12,fontFamily:mono}}>{Math.round(progress)}%</div>
       </div>
     </div>
   )
@@ -415,23 +431,24 @@ export default function ContractFlag() {
 
     return (
       <div style={base}>
+        <Fonts/>
         <Header/>
 
         {/* Summary card */}
-        <div style={{background:'#111827',borderRadius:14,padding:'22px 24px',marginBottom:20,color:'#fff'}}>
-          <div style={{display:'flex',alignItems:'flex-start',gap:20,flexWrap:'wrap'}}>
+        <div style={{background:ink,borderRadius:16,padding:'26px 28px',marginBottom:24,color:'#fff'}}>
+          <div style={{display:'flex',alignItems:'flex-start',gap:22,flexWrap:'wrap'}}>
             <Gauge score={summary?.risk_score||0}/>
             <div style={{flex:1,minWidth:200}}>
-              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',padding:'3px 10px',borderRadius:99,background:rc.bg,color:rc.text}}>{summary?.overall_risk} RISK</span>
-                <span style={{fontSize:12,color:'#6B7280'}}>{flags.length} issues found</span>
+              <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:10}}>
+                <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',padding:'4px 11px',borderRadius:99,background:rc.bg,color:rc.text}}>{summary?.overall_risk} RISK</span>
+                <span style={{fontSize:12.5,color:'rgba(255,255,255,0.55)'}}>{flags.length} issues found</span>
               </div>
-              <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'#F9FAFB',lineHeight:1.5,marginBottom:12}}>{summary?.one_line}</div>
-              <div style={{display:'flex',gap:12}}>
+              <div style={{fontFamily:serif,fontSize:17,color:'#F9FAFB',lineHeight:1.55,marginBottom:14}}>{summary?.one_line}</div>
+              <div style={{display:'flex',gap:14}}>
                 {[{count:reds.length,label:'High',color:'#EF4444'},{count:yellows.length,label:'Med',color:'#F59E0B'},{count:greens.length,label:'Low',color:'#10B981'}].map(({count,label,color})=>(
-                  <div key={label} style={{display:'flex',alignItems:'center',gap:5}}>
+                  <div key={label} style={{display:'flex',alignItems:'center',gap:6}}>
                     <div style={{width:8,height:8,borderRadius:'50%',background:color}}/>
-                    <span style={{fontSize:12,color:'#9CA3AF'}}>{count} {label}</span>
+                    <span style={{fontSize:12.5,color:'rgba(255,255,255,0.6)'}}>{count} {label}</span>
                   </div>
                 ))}
               </div>
@@ -441,8 +458,8 @@ export default function ContractFlag() {
 
         {/* Free flags (yellow + green) */}
         {freeFlags.length > 0 && (
-          <div style={{marginBottom:16}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:'#6B7280',marginBottom:10,textTransform:'uppercase'}}>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:sub,marginBottom:12,textTransform:'uppercase',fontFamily:mono}}>
               Free preview — {freeFlags.length} medium & low risk issue{freeFlags.length!==1?'s':''}
             </div>
             {freeFlags.map((f,i) => <FlagCard key={i} flag={f} idx={i}/>)}
@@ -451,59 +468,56 @@ export default function ContractFlag() {
 
         {/* Locked red flags */}
         {redFlags.length > 0 && (
-          <div style={{marginBottom:8}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:'#991B1B',marginBottom:10,textTransform:'uppercase'}}>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:'#B42318',marginBottom:12,textTransform:'uppercase',fontFamily:mono}}>
               🔒 {redFlags.length} high risk clause{redFlags.length!==1?'s':''} — {emailUnlocked ? '1 unlocked' : 'locked'}
             </div>
-            {/* Email unlock box - shown only before unlock */}
             {!emailUnlocked && (
               <EmailUnlockBox result={result} onUnlock={() => { track('email_unlock'); setEmailUnlocked(true) }} />
             )}
-            {/* First red flag: revealed if unlocked, else locked */}
             {emailUnlocked
               ? <FlagCard flag={redFlags[0]} idx={freeFlags.length} />
               : <LockedFlagCard flag={redFlags[0]} idx={freeFlags.length} />}
-            {/* Remaining red flags always locked */}
             {redFlags.slice(1).map((f,i) => <LockedFlagCard key={i} flag={f} idx={freeFlags.length+1+i}/>)}
           </div>
         )}
 
         {/* Paywall CTA */}
-        <div style={{background:'#111827',borderRadius:14,padding:'20px 24px',marginTop:8,marginBottom:16}}>
-          <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'#fff',marginBottom:6}}>
+        <div style={{background:ink,borderRadius:16,padding:'24px 28px',marginTop:10,marginBottom:20}}>
+          <div style={{fontFamily:serif,fontSize:19,color:'#fff',marginBottom:8}}>
             {emailUnlocked
               ? `Unlock the remaining ${redFlags.length - 1} high-risk clause${redFlags.length-1!==1?'s':''} — $29`
               : `Unlock all ${redFlags.length} high-risk clause${redFlags.length!==1?'s':''} — $29`}
           </div>
-          <div style={{fontSize:13,color:'#9CA3AF',marginBottom:16,lineHeight:1.6}}>
+          <div style={{fontSize:13.5,color:'rgba(255,255,255,0.6)',marginBottom:18,lineHeight:1.65}}>
             See exactly what each red flag says, what it means in plain English, the worst-case outcome, and your negotiation counter-move.
           </div>
           <button onClick={handlePay} disabled={paying}
-            style={{width:'100%',padding:'13px 0',border:'none',borderRadius:8,background:paying?'#374151':'#EF4444',color:'#fff',fontSize:15,fontWeight:700,cursor:paying?'default':'pointer',transition:'background 0.2s'}}>
+            style={{width:'100%',padding:'15px 0',border:'none',borderRadius:10,background:paying?'#4A463C':gold,color:ink,fontSize:15.5,fontWeight:700,cursor:paying?'default':'pointer',transition:'background 0.2s',fontFamily:sans}}>
             {paying ? 'Redirecting to payment…' : `Unlock Full Report — $29 →`}
           </button>
-          <div style={{fontSize:11,color:'#6B7280',marginTop:10,textAlign:'center'}}>
+          <div style={{fontSize:11.5,color:'rgba(255,255,255,0.45)',marginTop:12,textAlign:'center'}}>
             Secure checkout via Stripe · One-time payment · Instant access
           </div>
         </div>
 
         {/* Clean clauses */}
         {clean_clauses.length > 0 && (
-          <div style={{marginBottom:16}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:'#6B7280',marginBottom:10,textTransform:'uppercase'}}>Clean clauses ({clean_clauses.length})</div>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',color:sub,marginBottom:12,textTransform:'uppercase',fontFamily:mono}}>Clean clauses ({clean_clauses.length})</div>
             {clean_clauses.map((c,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',borderRadius:10,marginBottom:6,background:'#F0FDF4',border:'1px solid #BBF7D0'}}>
+              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 16px',borderRadius:12,marginBottom:8,background:'#F1FAF4',border:'1px solid #D3EEDD'}}>
                 <span>✓</span>
-                <span style={{fontSize:13,color:'#065F46'}}>{c}</span>
+                <span style={{fontSize:13.5,color:'#065F46'}}>{c}</span>
               </div>
             ))}
           </div>
         )}
 
-        <div style={{padding:'12px 14px',borderRadius:8,background:'#F9FAFB',border:'1px solid #E5E7EB',marginBottom:14}}>
-          <div style={{fontSize:11,color:'#9CA3AF',lineHeight:1.6}}>⚖ {disclaimer}</div>
+        <div style={{padding:'14px 16px',borderRadius:10,background:cream,border:`1px solid ${line}`,marginBottom:16}}>
+          <div style={{fontSize:12,color:faint,lineHeight:1.65}}>⚖ {disclaimer}</div>
         </div>
-        <button onClick={reset} style={{width:'100%',padding:'11px 0',border:'1px solid #E5E7EB',borderRadius:8,background:'#fff',color:'#6B7280',fontSize:13,fontWeight:500,cursor:'pointer'}}>
+        <button onClick={reset} style={{width:'100%',padding:'13px 0',border:`1px solid ${line}`,borderRadius:10,background:'#fff',color:sub,fontSize:13.5,fontWeight:500,cursor:'pointer',fontFamily:sans}}>
           ← Analyze another contract
         </button>
       </div>
