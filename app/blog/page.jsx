@@ -10,6 +10,11 @@ export const metadata = {
 
 const posts = [
   {
+    slug: "nda-red-flags-before-signing",
+    title: "What to Look for in an NDA Before Signing: 8 Red Flags",
+    desc: "One-way obligations, perpetual terms, hidden non-competes — the eight things to check in the five minutes before you sign any NDA.",
+  },
+  {
     slug: "freelance-contract-red-flags",
     title: "10 Freelance Contract Red Flags to Catch Before You Sign",
     desc: "Unpaid revision traps, IP grabs, indemnification bombs — the ten clauses that cost freelancers the most, and exactly what to push back on.",
