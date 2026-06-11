@@ -212,6 +212,7 @@ export default function Landing() {
           <div style={{width:22,height:22,background:'#E5C97E',borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'#0C0C0B'}}>⚑</div>
           <span style={{fontFamily:"'DM Serif Display',serif",fontSize:15}}>ContractFlag</span>
         </div>
+        <a href="/blog" style={{fontSize:12,color:'#E5C97E',textDecoration:'none',fontFamily:"'DM Mono',monospace",letterSpacing:'0.08em'}}>BLOG</a>
         <div style={{fontSize:11,color:'rgba(242,237,228,0.2)',fontFamily:"'DM Mono',monospace",letterSpacing:'0.05em'}}>
           NOT LEGAL ADVICE · RISK INTELLIGENCE ONLY · support@contractflag.app
         </div>
