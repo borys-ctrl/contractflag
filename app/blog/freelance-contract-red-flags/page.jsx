@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BlogHeader from "../BlogHeader";
 import Related from "../Related";
 
 export const metadata = {
@@ -123,6 +124,7 @@ export default function Page() {
   return (
     <div style={s.page}>
       <main style={s.main}>
+        <BlogHeader />
         <article>
           <p style={s.kicker}>Contracts · Freelancing</p>
           <h1 style={s.h1}>10 Freelance Contract Red Flags to Catch Before You Sign</h1>

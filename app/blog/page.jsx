@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BlogHeader from "./BlogHeader";
 import { s, CTA } from "./blogStyles";
 
 export const metadata = {
@@ -40,6 +41,7 @@ export default function Blog() {
   return (
     <div style={s.page}>
       <main style={s.main}>
+        <BlogHeader />
         <p style={s.kicker}>ContractFlag Blog</p>
         <h1 style={s.h1}>Contract guides, in plain English</h1>
         <p style={{ ...s.lede, marginBottom: "40px" }}>
@@ -52,6 +54,20 @@ export default function Blog() {
             <p style={s.cardDesc}>{p.desc}</p>
           </Link>
         ))}
+        <div style={{ marginTop: "40px" }}>
+          <h2 style={{ ...s.h2, fontSize: "24px" }}>Why review contracts before signing?</h2>
+          <p style={{ ...s.p, fontSize: "17px" }}>
+            Most freelancers and small business owners sign vendor agreements, NDAs, SaaS terms,
+            and client contracts without a legal review — a lawyer costs $300–$700 per contract,
+            which rarely makes sense for routine agreements. But routine contracts still contain
+            indemnification clauses, auto-renewal traps, IP transfers, non-competes, and one-sided
+            termination terms that can cost far more than the contract is worth. These guides
+            explain the most common contract red flags in plain English, so you know what to look
+            for, what each clause actually commits you to, and what to negotiate before you sign.
+            For a faster check, ContractFlag&apos;s AI contract review scans any agreement and
+            flags risky clauses in under a minute.
+          </p>
+        </div>
         <CTA />
       </main>
     </div>

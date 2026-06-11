@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BlogHeader from "../BlogHeader";
 import { s, CTA } from "../blogStyles";
 import Related from "../Related";
 
@@ -39,6 +40,7 @@ export default function Page() {
   return (
     <div style={s.page}>
       <main style={s.main}>
+        <BlogHeader />
         <article>
           <p style={s.kicker}>
             <Link href="/blog" style={s.backLink}>
