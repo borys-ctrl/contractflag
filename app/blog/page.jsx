@@ -10,6 +10,11 @@ export const metadata = {
 
 const posts = [
   {
+    slug: "indemnification-clause-explained",
+    title: "Indemnification Clauses Explained in Plain English (With Examples)",
+    desc: "What 'indemnify, defend, and hold harmless' actually commits you to — and the three exact sentences to negotiate so a $4,000 project can't become unlimited liability.",
+  },
+  {
     slug: "nda-red-flags-before-signing",
     title: "What to Look for in an NDA Before Signing: 8 Red Flags",
     desc: "One-way obligations, perpetual terms, hidden non-competes — the eight things to check in the five minutes before you sign any NDA.",
