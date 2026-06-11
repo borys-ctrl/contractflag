@@ -96,7 +96,7 @@ function CTA() {
   return (
     <div style={s.cta}>
       <p style={s.ctaHead}>Not sure what&apos;s hiding in your contract?</p>
-      <Link href="/" style={s.ctaBtn}>
+      <Link href="/app-route" style={s.ctaBtn}>
         Scan your contract with ContractFlag →
       </Link>
       <p style={s.ctaSub}>Flags risky clauses in plain English in under a minute.</p>
